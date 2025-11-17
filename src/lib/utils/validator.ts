@@ -1,45 +1,73 @@
-export class inputValidator {  
-    username(username: string) {
-        const usernameRegex = /^[a-z0-9_-]{3,20}$/;
-        if (!usernameRegex.test(username)) {
-            return "Username must be 3-20 characters long and can only contain lowercase letters, numbers, and underscores.";
-        }
-        return null;
-    }
+export function validateUsername(value: unknown): string | null {
+  if (!value || typeof value !== "string" || !value.trim()) {
+    return "Username is required.";
+  }
+  const v = value.trim();
+  if (v.length < 3 || v.length > 30) {
+    return "Username must be between 3 and 30 characters.";
+  }
+  // Only allow lowercase letters, numbers, dot, underscore, hyphen
+  if (!/^[a-z0-9._-]+$/.test(v)) {
+    return "Username can only contain lowercase letters, numbers, dots, underscores, and hyphens.";
+  }
+  return null;
+}
 
-    password(password: string) {
-        if (password.length < 8) {
-            return "Password must be at least 8 characters long.";
-        }
-        return null;
-    }
+export function validateDisplayName(value: unknown): string | null {
+  if (!value || typeof value !== "string" || !value.trim()) {
+    return "Display Name is required.";
+  }
+  const v = value.trim();
+  if (v.length > 50) {
+    return "Display Name must be 50 characters or fewer.";
+  }
+  // Only allow alphabets (upper and lower case)
+  if (!/^[a-zA-Z\s]+$/.test(v)) {
+    return "Display Name can only contain alphabets and spaces.";
+  }
+  return null;
+}
 
-    displayName(displayName: string) {
-        const displayNameRegex = /^[a-zA-Z0-9\s]{3,50}$/;
-        if (!displayNameRegex.test(displayName)) {
-            return "Display name must be 3-50 characters long and can only contain letters, numbers, and spaces.";
-        }
-        return null;
-    }
-    Age(birthDate: string) {
-        const today = new Date();
-        const birthDateObj = new Date(birthDate);
-        let age = today.getFullYear() - birthDateObj.getFullYear();
-        const m = today.getMonth() - birthDateObj.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDateObj.getDate())) {
-            age--;
-        }
-        if (age < 18) {
-            return "nah, you're too young dawg ☠️";
-        }
-        return null;
-    }
+export function validateBio(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string") return "Invalid bio.";
+  if (value.length > 160) return "Bio must be 160 characters or fewer.";
+  return null;
+}
 
-    Email(email: string) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          return "Please enter a valid email address.";
-        }
-        return null;
-      }
+export function validateGender(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string") return "Invalid gender.";
+  const allowed = new Set(["male", "female", "nonbinary", "other"]);
+  if (!allowed.has(value)) return "Invalid gender selection.";
+  return null;
+}
+
+export function validateOnboarding(payload: {
+  username?: unknown;
+  displayName?: unknown;
+  gender?: unknown;
+  bio?: unknown;
+}): string | null {
+  return (
+    validateUsername(payload.username) ||
+    validateDisplayName(payload.displayName) ||
+    validateGender(payload.gender) ||
+    validateBio(payload.bio) ||
+    null
+  );
+}
+
+export function validateEmail(value: unknown): string | null {
+    if (!value || typeof value !== "string" || !value.trim()) {
+        return "Email is required.";
+    }
+    const v = value.trim();
+    // Simple email regex for basic validation
+    if (
+        !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(v)
+    ) {
+        return "Invalid email address.";
+    }
+    return null;
 }

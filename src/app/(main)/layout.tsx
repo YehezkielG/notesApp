@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 import Navbar from "../../components/Navbar";
 import Header from "../../components/Header";
-import { Inter } from 'next/font/google';
+import { Inter } from "next/font/google";
+import AuthSessionProvider from "@/components/providers/AuthSessionProvider";
 
 export const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter', // Ini trik CSS-nya
-  display: 'swap',
+  subsets: ["latin"],
+  variable: "--font-inter", // CSS variable trick
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -22,16 +23,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.variable} antialiased px-2 mainBody sm:px-32`}
-      >
-        <Header />
-        <div className="flex">
-          <Navbar />
-          <div>
-            {children}
+      <body className={`${inter.variable} antialiased px-2 mainBody sm:px-32`}>
+        <AuthSessionProvider>
+          <Header />
+          <div className="flex">
+            <aside className="w-1/4 pr-8 hidden lg:block">
+              <Navbar />
+            </aside>
+            <main className="w-full lg:w-3/4">{children}</main>
           </div>
-        </div>
+        </AuthSessionProvider>
       </body>
     </html>
   );
