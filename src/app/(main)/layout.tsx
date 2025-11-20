@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
 import Navbar from "../../components/Navbar";
-import Header from "../../components/Header";
+import RightSidebar from "@/components/RightSidebar";
 import { Inter } from "next/font/google";
 import AuthSessionProvider from "@/components/providers/AuthSessionProvider";
+import Footer from "@/components/Footer"
 
 export const inter = Inter({
   subsets: ["latin"],
@@ -25,15 +26,19 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased px-2 mainBody sm:px-28`}>
         <AuthSessionProvider>
-          <Header />
-          <div className="flex">
-            <aside className="w-3/12 pr-8 hidden lg:block">
+          <div className="flex relative">
+            <aside className="sticky top-0 h-svh w-3/12 pr-8 hidden lg:block overflow-y-auto">
               <Navbar />
             </aside>
-            <main className="w-full lg:w-3/4 px-5">{children}</main>
-            <aside className="w-3/12 pl-8 hidden xl:block">
+            <main className="w-full top-0 px-5">{children}</main>
+            <aside className="sticky top-0 h-svh w-3/12 pl-8 xl:block">
               {/* Future right sidebar content can go here */}
-              Following
+              <RightSidebar />
+              <div className="absolute bottom-0" style={{
+                fontSize:"10px"
+              }}>
+                <Footer />
+              </div>
             </aside>
           </div>
         </AuthSessionProvider>

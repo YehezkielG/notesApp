@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { User as UserIcon, LogOut } from "lucide-react";
 
-export default function Navbar() {
+export default function RightSidebar() {
   const { data: session, status } = useSession();
   const [showDropdown, setShowDropdown] = useState(false);
-  const [isImageLoading, setIsImageLoading] = useState(true);
+  const [loadedImageSrc, setLoadedImageSrc] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const profileImageSrc = session?.user?.image || "/default-profile.png";
+  const isImageLoading = loadedImageSrc !== profileImageSrc;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -21,28 +23,21 @@ export default function Navbar() {
         setShowDropdown(false);
       }
     }
-    if (showDropdown) {
-      document.addEventListener("mousedown", handleClickOutside);
+
+    if (!showDropdown) {
+      return;
     }
+
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDropdown]);
 
-  // Reset loading state when session image changes
-  useEffect(() => {
-    setIsImageLoading(true);
-  }, [session?.user?.image]);
-
-  return (
-    <header className="flex justify-between py-5">
-      <div className="flex items-center space-x-3">
-        <Image src="/logo.png" alt="Notes App Logo" width={25} height={25} />
-        <h1 className="font-bold text-xl">vibeNote</h1>
-      </div>
+    return <header className="flex items-center justify-end my-5">
       <div className="relative flex items-center">
         {status === "loading" ? null : session ? (
-          <div ref={dropdownRef}>
+          <div ref={dropdownRef} className="relative">
             <button
               onClick={() => setShowDropdown((v) => !v)}
               className="focus:outline-none"
@@ -52,33 +47,33 @@ export default function Navbar() {
                   <div className="w-10 h-10 rounded-full border-2 border-gray-300 animate-pulse bg-gray-200" />
                 )}
                 <Image
-                  src={session.user?.image || "/default-profile.png"}
+                  src={profileImageSrc}
                   className={`rounded-full border-2 cursor-pointer transition-opacity ${
                     isImageLoading ? "opacity-0" : "opacity-100"
                   }`}
-                  alt="Profile Picture"
+                  alt="Profile picture"
                   width={40}
                   height={40}
-                  onLoadingComplete={() => setIsImageLoading(false)}
+                  onLoadingComplete={() => setLoadedImageSrc(profileImageSrc)}
                 />
               </div>
             </button>
             {showDropdown && (
-              <div className="absolute right-0 rounded-lg bg-white border shadow-lg z-10 p-3 py-5 ">
-                <div className="flex items-center justify-center">
+              <div className="absolute right-0 rounded-lg bg-white border shadow-lg p-3 py-5">
+                <div className="flex items-center justify-center mb-3">
                   <div className="relative">
                     {isImageLoading && (
                       <div className="w-12 h-12 rounded-full border-2 border-gray-300 animate-pulse bg-gray-200" />
                     )}
                     <Image
-                      src={session.user?.image || "/default-profile.png"}
+                      src={profileImageSrc}
                       className={`rounded-full border-2 transition-opacity ${
                         isImageLoading ? "opacity-0" : "opacity-100"
                       }`}
-                      alt="Profile Picture"
+                      alt="Profile picture"
                       width={50}
                       height={50}
-                      onLoadingComplete={() => setIsImageLoading(false)}
+                      onLoadingComplete={() => setLoadedImageSrc(profileImageSrc)}
                     />
                   </div>
                 </div>
@@ -118,13 +113,12 @@ export default function Navbar() {
           </div>
         ) : (
           <Link
-            className="bg-blue-600 text-white px-4 py-2 rounded-xl"
-            href={"/auth"}
+            className="border-2 border-indigo-500 focus:bg-indigo-500 focus:text-black text-indigo-500 px-4 py-1 rounded-xl"
+            href="/auth"
           >
             Sign In
           </Link>
         )}
       </div>
     </header>
-  );
 }

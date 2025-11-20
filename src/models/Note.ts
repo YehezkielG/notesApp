@@ -1,43 +1,45 @@
 import { Schema, model, models } from 'mongoose';
 
-// Ini adalah "Cetak Biru" untuk collection 'notes' Anda
-// Ini akan menyimpan Personal Diary DAN Public Notes
-const NoteSchema = new Schema({
-  // Teks dari catatan
-  content: {
-    type: String,
-    required: true,
+// Schema for user notes (private or public)
+const NoteSchema = new Schema(
+  {
+    // Note title
+    title: {
+      type: String,
+    },
+    // Note body
+    content: {
+      type: String,
+      required: true,
+    },
+    // Author reference (User model)
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    // Flag for public visibility
+    isPublic: {
+      type: Boolean,
+      default: false,
+    },
+    // AI emotion tag
+    emotion: {
+      type: String,
+      default: 'neutral',
+    },
+    // Future tags feature
+    tags: [String],
+    // Like count
+    likes: {
+      type: Number,
+      default: 0,
+    },
   },
-  
-  // Penulis catatan (merujuk ke model 'User')
-  author: {
-    type: Schema.Types.ObjectId,
-    ref: 'User', // Ini adalah 'relasi' ke collection 'users'
-    required: true,
+  {
+    timestamps: true,
   },
-
-  // Bendera untuk membedakan catatan
-  isPublic: {
-    type: Boolean,
-    default: false, // Default-nya, semua catatan adalah pribadi
-  },
-
-  // Data dari AI Emotion Labeling
-  emotion: {
-    type: String,
-    default: 'neutral',
-  },
-  
-  // (Fitur masa depan dari proposal Anda)
-  tags: [String],
-  likes: {
-    type: Number,
-    default: 0,
-  },
-  
-}, {
-  timestamps: true, // Otomatis menambah createdAt dan updatedAt
-});
+);
 
 const Note = models.Note || model('Note', NoteSchema);
 

@@ -11,6 +11,7 @@
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.1",
     "framer-motion": "^12.23.24",
+    "franc-min": "^6.2.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.553.0",
     "mongodb": "^7.0.0",

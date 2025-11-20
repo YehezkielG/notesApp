@@ -2,6 +2,7 @@
 import { Globe, NotebookText, Bell, Sparkles, Plus, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -15,16 +16,24 @@ export default function Navbar() {
     ];
 
     return (
-        <nav className="block">
+        <nav className="">
             <div className="container mx-auto">
-                <ul className="text-gray-600 text-lg font-medium">
+                      <div className="flex items-center space-x-3 my-5">
+                        <Image src="/logo.png" alt="Notes App Logo" width={25} height={25} />
+                        <h1 className="font-bold text-xl">vibeNote</h1>
+                    </div>
+                <ul className="text-lg font-medium">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href || (item.href === '/' && pathname === '/');
                         return (
-                            <li className={`p-3 rounded-xl ${isActive ? 'bg-gray-50' : ''}`} key={item.label}>
+                            <li className="py-3" key={item.label}>
                                 <Link
                                     href={item.href}
-                                    className={`hover:text-gray-900 flex items-center`}
+                                    className={`flex items-center ${
+                                        isActive
+                                            ? 'text-black font-semibold'
+                                            : 'text-gray-600 hover:text-gray-900'
+                                    }`}
                                 >
                                     {item.icon}
                                     {item.label}
