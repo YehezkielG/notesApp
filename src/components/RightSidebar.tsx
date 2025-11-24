@@ -4,6 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { User as UserIcon, LogOut } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export default function RightSidebar() {
   const { data: session, status } = useSession();
@@ -26,6 +27,10 @@ export default function RightSidebar() {
 
     if (!showDropdown) {
       return;
+    }
+
+    if(!session?.user?.isOnboarded){
+      redirect('/onboarding');
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -91,7 +96,7 @@ export default function RightSidebar() {
                   </p>
                 </div>
                 <Link
-                  href="/profile"
+                  href={`/profile/${session.user?.username}`}
                   className="flex items-center gap-2 hover:bg-gray-100 p-2"
                   onClick={() => setShowDropdown(false)}
                 >

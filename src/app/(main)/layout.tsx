@@ -30,8 +30,10 @@ export default function RootLayout({
             <aside className="sticky top-0 h-svh w-3/12 pr-8 hidden lg:block overflow-y-auto">
               <Navbar />
             </aside>
-            <main className="w-full top-0 px-5">{children}</main>
-            <aside className="sticky top-0 h-svh w-3/12 pl-8 hidden xl:block overflow-y-auto">
+            <main className="w-full p-5">
+              {children}
+            </main>
+            <aside className="sticky top-0 h-svh w-3/12 pl-8">
               <RightSidebar />
               <div className="absolute bottom-0" style={{
                 fontSize:"10px"

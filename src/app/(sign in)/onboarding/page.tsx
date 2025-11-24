@@ -11,57 +11,6 @@ import type { IUser } from "@/models/User";
 // This is your "Edit Profile" page at /profile/me
 // It is displayed INSIDE the main layout (with Sidebar)
 
-// NEW: GenderInput component
-function GenderInput({ setGender }: { setGender: (value: string) => void }) {
-  type Gender = "male" | "female" | "prefer_not_to_say";
-  const options: {
-    key: Gender;
-    label: string;
-    Icon: React.ComponentType<{ size?: number; className?: string }>;
-    iconClass: string;
-  }[] = [
-    { key: "male", label: "Male", Icon: Mars, iconClass: "text-sky-500" },
-    { key: "female", label: "Female", Icon: Venus, iconClass: "text-pink-500" },
-    {
-      key: "prefer_not_to_say",
-      label: "Prefer not to say",
-      Icon: CircleQuestionMark,
-      iconClass: "text-violet-500",
-    },
-  ];
-
-  return (
-    <div className="mb-2">
-      <label className="block text-xs font-medium text-gray-600 mb-2">
-        Gender
-      </label>
-      <div className="flex flex-wrap gap-3">
-        {options.map(({ key, label, Icon, iconClass }) => (
-          <label key={key} className="cursor-pointer">
-            <input
-              type="radio"
-              name="gender"
-              value={key}
-              className="hidden peer"
-              onChange={() => setGender(key)}
-              required
-            />
-            <motion.div
-              className="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm bg-white peer-checked:border-indigo-500 peer-checked:ring-2 peer-checked:ring-indigo-200 transition"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Icon size={18} className={iconClass} />
-              <span className="font-medium text-gray-700 peer-checked:text-indigo-600">
-                {label}
-              </span>
-            </motion.div>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function EditProfilePage() {
   // Only users who are already onboarded can access this page
@@ -218,13 +167,6 @@ export default function EditProfilePage() {
           </p>
         </div>
         <div className="">
-        <div className="">
-          {/* REPLACED: old <select> gender block with new component */}
-          <GenderInput setGender={setGender} />
-          <p className="text-xs text-red-500">
-            {errInput.gender}
-          </p>
-        </div>
         {/* Bio (optional) */}
         <div>
           <label

@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Kita tambahkan konfigurasi 'images' di sini
+  // reactStrictMode: false,
   images: {
     // 'remotePatterns' adalah cara modern (dan lebih aman)
     // untuk mendaftarkan domain eksternal

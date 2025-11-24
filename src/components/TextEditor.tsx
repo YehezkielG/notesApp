@@ -14,6 +14,7 @@ import {
   RotateCcw,
   Copy,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 
 const LOCAL_DRAFT_KEY = "new-note-draft";
@@ -37,6 +38,10 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
   const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
   const [showDraftBanner, setShowDraftBanner] = useState(false);
   const [showSavedBanner, setShowSavedBanner] = useState(false);
+  const [suggestingTitle, setSuggestingTitle] = useState(false);
+  const [titleHint, setTitleHint] = useState<string | null>(null);
+  const [showTitleBanner, setShowTitleBanner] = useState(false);
+  const [showSuggestTooltip, setShowSuggestTooltip] = useState(false);
 
   // load draft from localStorage on mount
   useEffect(() => {
@@ -86,6 +91,13 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
     const timer = setTimeout(() => setShowSavedBanner(false), 3000);
     return () => clearTimeout(timer);
   }, [showSavedBanner]);
+
+  // auto-hide the "title suggestion" banner
+  useEffect(() => {
+    if (!showTitleBanner || !titleHint) return;
+    const timer = setTimeout(() => setShowTitleBanner(false), 3000);
+    return () => clearTimeout(timer);
+  }, [showTitleBanner, titleHint]);
 
   useEffect(() => {
     if (focusMode) {
@@ -179,6 +191,7 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
         break;
       case "undo":
         handleUndo();
+        break;
       case "copy":
         if (!content) return;
         await navigator.clipboard?.writeText(content);
@@ -220,20 +233,14 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
         body: JSON.stringify({ title, content, isPublic }),
       });
       const data = await response.json();
-      analyzeEmotion(data.note.emotion);
-
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to save the note.");
+        throw new Error(data?.message || "Failed to save the note.");
       }
+      analyzeEmotion(data?.note?.emotion ?? []);
 
-      // remove draft after success
       if (typeof window !== "undefined") {
         window.localStorage.removeItem(LOCAL_DRAFT_KEY);
       }
-
-    //   router.push(`/profile/me`);
-    //   router.refresh();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -241,12 +248,66 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
     }
   };
 
+  const requestTitleSuggestion = async () => {
+    if (suggestingTitle) return;
+    if (!content.trim() || content.trim().length < 20) {
+      setTitleHint("Write a bit more content before asking for a title.");
+      setShowTitleBanner(true);
+      return;
+    }
+    try {
+      setSuggestingTitle(true);
+      setTitleHint(null);
+      setShowTitleBanner(false);
+      const response = await fetch("/api/title-suggestion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || "Failed to fetch title suggestion.");
+      }
+      if (data?.suggestion) {
+        setTitle(data.suggestion);
+        setTitleHint("Suggested title applied.");
+      } else {
+        setTitleHint("No title suggestion returned. Try again.");
+      }
+      setShowTitleBanner(true);
+    } catch (error: any) {
+      setTitleHint(error?.message || "Unable to fetch title suggestion.");
+      setShowTitleBanner(true);
+    } finally {
+      setSuggestingTitle(false);
+    }
+  };
+
+  const handleTextareaKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const target = e.currentTarget;
+      const start = target.selectionStart;
+      const end = target.selectionEnd;
+      const insert = "        ";
+      const nextValue =
+        target.value.slice(0, start) + insert + target.value.slice(end);
+
+      setContent(nextValue);
+      requestAnimationFrame(() => {
+        target.selectionStart = target.selectionEnd = start + insert.length;
+        adjustTextareaHeight();
+      });
+    }
+  };
 
   if (authStatus === "loading") {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-sm text-black">
         <Loader2 className="h-10 w-10 animate-spin" />
-        <span>Loading...</span>
+        <span>...</span>
       </div>
     );
   }
@@ -287,7 +348,7 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
   ];
 
   return (
-    <div className={`${focusMode ? "max-w-none w-full my-10 p-0 " : "mt-5"} min-h-screen text-black`}>
+    <div className={`${focusMode ? "max-w-none w-full p-0 " : ""} min-h-screen text-black`}>
       {focusMode && (
         <style>{`body.note-focus-mode aside, Header { display: none !important; }`}</style>
       )}
@@ -350,7 +411,8 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
         className="space-y-6 flex flex-col min-h-[calc(100vh-6rem)]"
       >
         <div className="border-b mt-5 border-gray-700 transition">
-          <input
+          <div className="flex items-center">
+            <input
             id="title"
             name="title"
             type="text"
@@ -366,6 +428,41 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
             onChange={(e) => setTitle(e.target.value)}
             required
           />
+            <div
+              className="relative ml-1"
+              onMouseEnter={() => setShowSuggestTooltip(true)}
+              onMouseLeave={() => setShowSuggestTooltip(false)}
+            >
+              <button
+                type="button"
+                onClick={requestTitleSuggestion}
+                disabled={suggestingTitle || !content.trim()}
+                className="inline-flex items-center gap-1 rounded-md border border-black/60 px-3 text-xs font-medium text-black hover:bg-black/5 disabled:opacity-50 p-1 cursor-pointer"
+                aria-label="Suggest a title"
+              >
+                {suggestingTitle ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5" />
+                )}
+              </button>
+              {showSuggestTooltip && (
+                <span className="absolute -top-6 right-0 whitespace-nowrap rounded bg-black px-2 py-1 text-[10px] text-white shadow transition-opacity">
+                  Suggest title
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div
+            className={`mb-1 text-xs transition-all text-gray-500 duration-700 ${
+              showTitleBanner && titleHint
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 -translate-y-1 pointer-events-none"
+            }`}
+          >
+            {titleHint ?? "."}
+          </div>
         </div>
 
         <div
@@ -373,13 +470,13 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
             focusMode ? "mt-2" : ""
           }`}
         >
-          <div className="sticky top-0 flex flex-wrap pb-6 h-10 items-center gap-2 text-sm text-black">
+          <div className="sticky top-0 flex flex-wrap pb-6 h-10 items-center gap-2 text-sm text-black ">
             {toolbarActions.map(({ action, icon: Icon, label, theme }) => (
               <button
                 key={action}
                 type="button"
                 onClick={() => handleToolbarAction(action)}
-                className={`inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-semibold cursor-pointer ${theme.button}`}
+                className={`inline-flex items-center gap-1 bg-white rounded-md border px-3 py-1.5 text-xs font-semibold cursor-pointer ${theme.button}`}
               >
                 <Icon className={`h-4 w-4 ${theme.icon}`} />
                 {label}
@@ -389,7 +486,7 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
               <select
                 value={fontSize}
                 onChange={(e) => setFontSize(e.target.value)}
-                className="rounded-md border px-3 py-1.5 text-xs font-semibold "
+                className="rounded-md border px-3 py-1.5 bg-white text-xs font-semibold "
               >
                 <option value="14px">14px</option>
                 <option value="16px">16px</option>
@@ -398,7 +495,7 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
               <button
                 type="button"
                 onClick={() => setFocusMode((s) => !s)}
-                className="rounded-md border border-black/60 p-2 text-black hover:border-black hover:text-gray-600 cursor-pointer"
+                className="rounded-md border bg-white border-black/60 p-2 text-black hover:border-black hover:text-gray-600 cursor-pointer"
               >
                 {focusMode ? (
                   <Minimize2 className="h-4 w-4 text-black" />
@@ -408,7 +505,7 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
               </button>
             </div>
           </div>
-          <div className="flex-1 min-h-0 text-gray-800  py-4">
+          <div className="flex-1 min-h-0 text-gray-800">
             <textarea
               ref={textareaRef}
               value={content}
@@ -416,6 +513,7 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
                 setContent(e.target.value);
                 requestAnimationFrame(adjustTextareaHeight);
               }}
+              onKeyDown={handleTextareaKeyDown}
               spellCheck={false}
               className="w-full overflow-none resize-none bg-transparent text-sm text-black outline-none focus:ring-0 leading-relaxed
               "

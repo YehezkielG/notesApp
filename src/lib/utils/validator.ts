@@ -38,7 +38,7 @@ export function validateBio(value: unknown): string | null {
 export function validateGender(value: unknown): string | null {
   if (value === undefined || value === null || value === "") return null;
   if (typeof value !== "string") return "Invalid gender.";
-  const allowed = new Set(["male", "female", "nonbinary", "other"]);
+  const allowed = new Set(["male", "female", "-"]);
   if (!allowed.has(value)) return "Invalid gender selection.";
   return null;
 }

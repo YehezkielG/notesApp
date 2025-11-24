@@ -1,84 +1,71 @@
 import { franc } from "franc-min";
-import 'server-only';
+import { getHfClient } from "@/lib/hf-client";
 
-const TRANSLATOR_API = "https://router.huggingface.co/hf-inference/models/Helsinki-NLP/opus-mt-mul-en";
-const EMOTION_API ="https://router.huggingface.co/hf-inference/models/facebook/bart-large-mnli";
+const TRANSLATOR_MODEL = "Helsinki-NLP/opus-mt-mul-en";
+const EMOTION_MODEL = "bhadresh-savani/bert-base-go-emotion";
 
-const HEADERS = {
-    Authorization: `Bearer ${process.env.HUGGINGFACE_TOKEN}`,
-    "Content-Type": "application/json",
-};
+
+type TranslationResult =
+  | { translation_text?: string }
+  | { generated_text?: string }
+  | string;
+
+const hf = () => getHfClient();
 
 function splitIntoSentences(text: string): string[] {
-    return text
-        .split(/(?<=[.!?])\s+/)
-        .map((s) => s.trim())
-        .filter(Boolean);
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
 }
 
-async function translateToEnIfNeeded(sentence: string): Promise<{
-    translated: string;
-    lang: string;
-}> {
-    const langCode = franc(sentence || "");
-    const isEnglish = langCode === "eng";
+async function translateToEnglish(sentence: string) {
+  const langCode = franc(sentence || "");
+  if (langCode === "eng") {
+    return { translated: sentence, lang: langCode };
+  }
 
-    if (isEnglish) {
-        return { translated: sentence, lang: langCode };
-    }
+  const response = await hf().translation({
+    model: TRANSLATOR_MODEL,
+    inputs: sentence,
+  });
 
-    const res = await fetch(TRANSLATOR_API, {
-        headers: HEADERS,
-        method: "POST",
-        body: JSON.stringify({ inputs: sentence }),
-    });
+  const translated =
+    Array.isArray(response)
+      ? (response[0] as TranslationResult)?.translation_text ?? sentence
+      : (response as TranslationResult)?.translation_text ?? sentence;
 
-    const data = await res.json();
-    const translated = data?.[0]?.translation_text || sentence;
-
-    return { translated, lang: langCode };
+  return { translated, lang: langCode };
 }
-
 
 export async function analyzeEmotion(text: string) {
-     try {
-        if (!text || typeof text !== "string") {
-            return {
-                error: "text must be a non-empty string",
-                status: 400}
-        }
+  const sentences = splitIntoSentences(text);
+  if (!sentences.length) {
+    return { error: "Text must contain at least one sentence." };
+  }
 
-        const sentences = splitIntoSentences(text);
-        if (sentences.length === 0) {
-            return {
-                error: "text must contain at least one sentence",
-                status: 400,
-            }
-        }
+  const translatedParts = await Promise.all(
+    sentences.map((sentence) => translateToEnglish(sentence)),
+  );
 
-        const translatedParts = await Promise.all(
-            sentences.map((s) => translateToEnIfNeeded(s)),
-        );
+  console.log("Translated Parts:", translatedParts);
 
-        const normalizedText = translatedParts.map((p) => p.translated).join(" ");
+  const normalizedText = translatedParts.map((part) => part.translated).join(" ");
+  const detectedLangs = Array.from(
+    new Set(translatedParts.map((part) => part.lang ?? "und")),
+  );
 
-        const emotionRes = await fetch(EMOTION_API, {
-            headers: HEADERS,
-            method: "POST",
-            body: JSON.stringify({
-                inputs: normalizedText,
-                parameters: {
-                    candidate_labels: ["Happy", "Sad", "Angry", "Love", "Anxiety", "Disgust", "Anger"],
-                },
-            }),
-        });
-        const emotionData = await emotionRes.json();
-        console.log("Emotion analysis result:", emotionData);
+  console.log("Normalized Text:", normalizedText);
+  console.log("Detected Languages:", detectedLangs);
 
-        return {
-            raw: emotionData,
-        };
-    } catch (error: any) {
-        return { error: error.message };
-    }
+  const classification = await hf().textClassification({
+    model: EMOTION_MODEL,
+    inputs: normalizedText,
+  });
+
+  return {
+    original_langs: detectedLangs,
+    normalized_text: normalizedText,
+    raw: classification,
+  };
 }

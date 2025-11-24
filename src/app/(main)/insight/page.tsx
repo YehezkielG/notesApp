@@ -13,7 +13,7 @@ export default function ModalExample() {
       >
         Open Modal
       </button>
-
+      
       <AnimatePresence>
         {open && (
           <motion.div
@@ -36,13 +36,7 @@ export default function ModalExample() {
               <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Ini contoh modal menggunakan Framer Motion.
               </p>
-              <button
-                onClick={() => setOpen(false)}
-                className="bg-red-500 text-white px-4 py-2 rounded-xl"
-              >
-                Tutup
-                
-              </button>
+              <button onClick={() => setOpen(false)} className="bg-red-500 text-white px-4 py-2 rounded-xl"> Tutup </button>
             </motion.div>
           </motion.div>
         )}

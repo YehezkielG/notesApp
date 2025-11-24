@@ -6,7 +6,6 @@ import {
   validateOnboarding,
   validateUsername,
   validateBio,
-  validateGender,
   validateDisplayName,
 } from "@/lib/utils/validator";
 
@@ -20,13 +19,12 @@ export async function POST(request: Request) {
 
     const userId = session.user.id;
 
-    const { username, displayName, gender, bio } = await request.json();
+    const { username, displayName, bio } = await request.json();
 
     // validate payload via centralized validators
     const validationError = validateOnboarding({
       username,
       displayName,
-      gender,
       bio,
     });
     if (validationError) {
@@ -35,7 +33,6 @@ export async function POST(request: Request) {
           errInput: {
             username: validateUsername(username),
             displayName: validateDisplayName(displayName),
-            gender: validateGender(gender),
             bio: validateBio(bio),
           },
         },
@@ -68,9 +65,10 @@ export async function POST(request: Request) {
         username: username,
         displayName: normalizedDisplayName,
         name: normalizedDisplayName,
-        gender: gender,
         bio: bio,
         isOnboarded: true,
+        followers: [],
+        following: [],
       },
     });
 

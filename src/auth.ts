@@ -26,7 +26,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async session({ session, user }) {
       // Attach all user fields to session.user
-      session.user = { ...user };
+      const { id, username, name, image, isOnboarded } = user;
+      session.user = {
+        id,
+        username: username ?? null,
+        displayName: name ?? null,
+        image: image ?? null,
+        isOnboarded: isOnboarded ?? false,
+      };
       return session;
     },
     async signIn({ user, account }) {
@@ -65,6 +72,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             scope: account.scope ?? null,
             id_token: account.id_token ?? null,
             session_state: account.session_state ?? null,
+            gender: account.gender ?? null,
           },
         },
         { upsert: true },
