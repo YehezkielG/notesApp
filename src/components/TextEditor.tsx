@@ -437,17 +437,17 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion: (emotio
                 type="button"
                 onClick={requestTitleSuggestion}
                 disabled={suggestingTitle || !content.trim()}
-                className="inline-flex items-center gap-1 rounded-md border border-black/60 px-3 text-xs font-medium text-black hover:bg-black/5 disabled:opacity-50 p-1 cursor-pointer"
+                className="inline-flex items-center gap-1 rounded-md border border-black/60 text-xs font-medium text-black hover:bg-black/5 disabled:opacity-50 p-1 cursor-pointer"
                 aria-label="Suggest a title"
               >
                 {suggestingTitle ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <Sparkles className="h-4 w-4" />
                 )}
               </button>
               {showSuggestTooltip && (
-                <span className="absolute -top-6 right-0 whitespace-nowrap rounded bg-black px-2 py-1 text-[10px] text-white shadow transition-opacity">
+                <span className="absolute top-7 right-0 whitespace-nowrap rounded bg-black px-2 py-1 text-[10px] text-white shadow transition-opacity">
                   Suggest title
                 </span>
               )}

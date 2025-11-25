@@ -17,7 +17,7 @@ export default function Navbar() {
         { href: '/messages', icon: <Sparkles className="inline mr-3" size={20} />, label: 'Insight' },
         { href: `/profile/${session?.user?.username}`, icon: <User className="inline mr-3" size={20} />, label: 'My Profile' },
     ];
-
+    
     return (
         <nav className="">
             <div className="container mx-auto">

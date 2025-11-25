@@ -48,15 +48,11 @@ export async function analyzeEmotion(text: string) {
     sentences.map((sentence) => translateToEnglish(sentence)),
   );
 
-  console.log("Translated Parts:", translatedParts);
 
   const normalizedText = translatedParts.map((part) => part.translated).join(" ");
   const detectedLangs = Array.from(
     new Set(translatedParts.map((part) => part.lang ?? "und")),
   );
-
-  console.log("Normalized Text:", normalizedText);
-  console.log("Detected Languages:", detectedLangs);
 
   const classification = await hf().textClassification({
     model: EMOTION_MODEL,

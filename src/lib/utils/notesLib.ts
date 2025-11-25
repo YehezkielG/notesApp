@@ -2,12 +2,15 @@ export const formatCreatedAt = (createdAt: string) => {
   const date = new Date(createdAt);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-  const hours = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)));
 
-  if (hours < 24) return `${hours} hours`;
+  const minutes = Math.max(1, Math.floor(diffMs / (1000 * 60)));
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'}`;
+
+  const hours = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)));
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'}`;
 
   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (days < 7) return `${days} day`;
+  if (days < 7) return `${days} day${days === 1 ? '' : 's'}`;
 
   if (date.getFullYear() === now.getFullYear()) {
     return date.toLocaleString("en-US", { month: "short", day: "numeric" });

@@ -116,6 +116,7 @@ export default function RightSidebar() {
               </div>
             )}
           </div>
+        
         ) : (
           <Link
             className="border-2 border-indigo-500 focus:bg-indigo-500 focus:text-black text-indigo-500 px-4 py-1 rounded-xl"

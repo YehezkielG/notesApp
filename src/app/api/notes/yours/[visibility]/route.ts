@@ -31,7 +31,7 @@ export async function GET(
     };
 
     const notes = await Note.find(filter)
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 }).populate("author", "username displayName image")
       .lean()
       .exec();
 

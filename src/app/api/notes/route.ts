@@ -78,26 +78,95 @@ export async function POST(request: Request) {
 }
 
 
-
-// =======================
-// GET: FETCH NOTES
-// =======================
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const authorId = searchParams.get("author");
     const noteId = searchParams.get("id");
+    const scope = (searchParams.get("scope") || "all").toLowerCase();
+    const sortParam = (searchParams.get("sort") || "newest").toLowerCase();
+
+    const limitParam = searchParams.get("limit");
+    const skipParam = searchParams.get("skip");
+
+    const limit =
+      limitParam !== null && !Number.isNaN(Number(limitParam))
+        ? Math.min(Math.max(parseInt(limitParam, 10), 1), 50)
+        : undefined;
+    const skip =
+      skipParam !== null && !Number.isNaN(Number(skipParam))
+        ? Math.max(parseInt(skipParam, 10), 0)
+        : 0;
+
+    const sortQuery =
+      sortParam === "popular"
+        ? { likes: -1, createdAt: -1 }
+        : { createdAt: -1 };
 
     await dbConnect();
     await User;
 
     let notes;
+    let hasMore = false;
+
+    if (scope === "following") {
+      const session = await auth();
+      if (!session?.user?.id) {
+        return NextResponse.json(
+          { message: "Not authenticated." },
+          { status: 401 },
+        );
+      }
+
+      const viewer = await User.findById(session.user.id)
+        .select("following")
+        .lean();
+      const followingIds = viewer?.following?.map((id: mongoose.Types.ObjectId) =>
+        id.toString(),
+      );
+
+      if (!followingIds?.length) {
+        return NextResponse.json({ notes: [], hasMore: false }, { status: 200 });
+      }
+
+      const filter = { author: { $in: followingIds }, isPublic: true };
+      let query = Note.find(filter).sort(sortQuery).populate(
+        "author",
+        "username displayName image",
+      );
+
+      if (typeof limit === "number") {
+        query = query.skip(skip).limit(limit);
+      }
+
+      notes = await query.lean();
+
+      if (typeof limit === "number") {
+        const total = await Note.countDocuments(filter);
+        hasMore = skip + notes.length < total;
+      }
+
+      return NextResponse.json({ notes, hasMore }, { status: 200 });
+    }
 
     if (authorId) {
-      notes = await Note.find({ author: authorId, isPublic: true })
-        .sort({ createdAt: -1 })
-        .lean();
-      return NextResponse.json({ notes }, { status: 200 });
+      const filter = { author: authorId, isPublic: true };
+      let query = Note.find(filter)
+        .sort(sortQuery)
+        .populate("author", "username displayName image");
+
+      if (typeof limit === "number") {
+        query = query.skip(skip).limit(limit);
+      }
+
+      notes = await query.lean();
+
+      if (typeof limit === "number") {
+        const total = await Note.countDocuments(filter);
+        hasMore = skip + notes.length < total;
+      }
+
+      return NextResponse.json({ notes, hasMore }, { status: 200 });
     }
 
     if (noteId) {
@@ -113,20 +182,37 @@ export async function GET(request: Request) {
         .lean();
 
       if (!note) {
-        return NextResponse.json({ message: "Note not found." }, { status: 404 });
+        return NextResponse.json(
+          { message: "Note not found." },
+          { status: 404 },
+        );
       }
+
+      return NextResponse.json({ notes: note }, { status: 200 });
     }
-    notes = await Note.find({ isPublic: true })
-        .sort({ createdAt: -1 })
-        .lean();
 
-    return NextResponse.json({ notes }, { status: 200 });
+    const filter = { isPublic: true };
+    let query = Note.find(filter)
+      .sort(sortQuery)
+      .populate("author", "username displayName image");
 
+    if (typeof limit === "number") {
+      query = query.skip(skip).limit(limit);
+    }
+
+    notes = await query.lean();
+
+    if (typeof limit === "number") {
+      const total = await Note.countDocuments(filter);
+      hasMore = skip + notes.length < total;
+    }
+
+    return NextResponse.json({ notes, hasMore }, { status: 200 });
   } catch (error) {
     console.error("Failed to fetch notes:", error);
     return NextResponse.json(
-        { message: "Internal server error." },
-        { status: 500 }
+      { message: "Internal server error." },
+      { status: 500 },
     );
   }
 }

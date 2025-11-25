@@ -1,7 +1,8 @@
 "use client";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Lock, Globe } from "lucide-react";
+import SearchBar from "@/components/SearchBar";
 
 export default function YoursLayout({
     children,
@@ -9,18 +10,36 @@ export default function YoursLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const currentIsPrivate = pathname.includes("/note/yours/private");
 
+    const handleSearch = (query: string) => {
+        const currentPath = pathname;
+        if (query.trim()) {
+            router.push(`${currentPath}?q=${encodeURIComponent(query)}`);
+        } else {
+            router.push(currentPath);
+        }
+    };
+
     const tabClass = (active: boolean) =>
-        `p-3 flex items-center justify-center gap-2 text-center w-1/2 text-lg font-semibold cursor-pointer ${
-            active
-                ? "bg-gray-900/15 text-gray-900"
-                : "text-gray-500 hover:text-gray-900"
-        }`;
+        `rounded-full border px-4 py-1.5 text-sm gap-2 font-medium transition-colors flex items-center${
+                    active
+                      ? "border-black bg-black text-white"
+                      : "border-gray-300 text-gray-600 hover:border-black hover:text-black"
+                  }`
 
     return (
         <div className="w-full min-h-svh">
-            <div className="bg-gray-900/10 flex items-center flex-wrap mb-4 text-sm text-gray-900">
+            <SearchBar
+                onSearch={handleSearch}
+                placeholder="Search your notes by title, content, or date..."
+                defaultValue={searchParams.get("q") || ""}
+                className="mb-6"
+            />
+            
+            <div className="gap-3 mb-6 flex items-center flex-wrap  text-sm text-gray-900">
                 <Link href="/note/yours/private" className={tabClass(currentIsPrivate)}>
                     <Lock size={18} />
                     Private
@@ -30,7 +49,8 @@ export default function YoursLayout({
                     Public
                 </Link>
             </div>
-            {children}
+            <div className="space-y-10">
+            {children}</div>
         </div>
     );
 }

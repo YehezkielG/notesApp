@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
+import {Loader2} from "lucide-react";
+import ListNote from "@/components/ListNotes";
+import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton";
 
 type ProfileStats = { followers: number; following: number; publicNotes: number };
 
@@ -13,10 +16,9 @@ export default function ProfilePage() {
   const router = useRouter();
   const { data: session } = useSession();
   const username = params.username as string;
-  console.log("Username from params:", username);
 
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [notes, setNotes] = useState<Note[]>([]);
+  const [user, setUser] = useState<UserProfileType | null>(null);
+  const [notes, setNotes] = useState<NoteType[]>([]);
   const [stats, setStats] = useState<ProfileStats>({
     followers: 0,
     following: 0,
@@ -27,6 +29,10 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [followPending, setFollowPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showEdit, setShowEdit] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editData, setEditData] = useState({ displayName: "", bio: "", image: "" });
+  const modalRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -67,6 +73,16 @@ export default function ProfilePage() {
     }
   }, [username]);
 
+  // Close modal on Escape key
+  useEffect(() => {
+    if (!showEdit) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowEdit(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showEdit]);
+
   const handleFollowToggle = async () => {
     if (!session?.user?.id) {
       router.push("/auth");
@@ -80,7 +96,6 @@ export default function ProfilePage() {
         if (res.status === 401) router.push("/auth");
         return;
       }
-      console.log("Follow toggle response:", await res);
       const data = await res.json();
       setIsFollowing(data.isFollowing ?? false);
       if (data.stats) setStats(data.stats);
@@ -90,12 +105,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh] gap-2">
-        <Loader2 className="h-5 w-5 animate-spin" />
-        <span className="text-sm text-gray-500">Loading profile...</span>
-      </div>
-    );
+    return <ProfileSkeleton noteCount={3} />;
   }
 
   if (error || !user) {
@@ -105,6 +115,7 @@ export default function ProfilePage() {
       </div>
     );
   }
+
 
   return (
     <div className="space-y-6">
@@ -136,20 +147,132 @@ export default function ProfilePage() {
           <button
             onClick={handleFollowToggle}
             disabled={followPending}
-            className="ml-auto rounded-full border border-black px-4 py-1.5 text-sm font-medium text-black hover:bg-black hover:text-white disabled:opacity-50 cursor-pointer"
-          >
+            className="ml-auto rounded-full px-4 py-1.5 text-sm font-medium border-[1px] text-gray-700 hover:bg-gray-700 hover:text-white disabled:opacity-50 cursor-pointer">
             {followPending
               ? "..."
               : isFollowing
               ? "Following"
               : "Follow"}
           </button>
-        ) : (<button
-            onClick={() => router.push("/auth")}
-            className="ml-auto rounded-full border border-black px-4 py-1.5 text-sm font-medium text-black hover:bg-black hover:text-white"
-          >
-            Edit Profile
-          </button>) }
+        ) : (
+          <>
+            <button
+              onClick={() => {
+                setEditData({
+                  displayName: user?.displayName ?? "",
+                  bio: user?.bio ?? "",
+                  image: user?.image ?? "",
+                });
+                setShowEdit(true);
+              }}
+              className="ml-auto rounded-full px-4 py-1.5 text-sm cursor-pointer  font-medium border-[1px] text-gray-700 hover:bg-gray-700 hover:text-white"
+            >
+              Edit Profile
+            </button>
+
+            <AnimatePresence>
+              {showEdit && (
+                <motion.div
+                  className="fixed inset-0 z-50 flex items-center justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <div
+                    className="absolute inset-0 bg-black/40"
+                    onClick={() => setShowEdit(false)}
+                  />
+
+                  <motion.div
+                    ref={modalRef}
+                    className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-lg"
+                    initial={{ y: 30, opacity: 0, scale: 0.98 }}
+                    animate={{ y: 0, opacity: 1, scale: 1 }}
+                    exit={{ y: 20, opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h3 className="text-lg font-semibold mb-3">Edit Profile</h3>
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        setIsSaving(true);
+                        setError(null);
+                        try {
+                          const res = await fetch(`/api/profile/update`, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(editData),
+                          });
+
+                          if (!res.ok) {
+                            const err = await res.json().catch(() => null);
+                            throw new Error(err?.message || "Failed to save profile");
+                          }
+
+                          const data = await res.json();
+                          setUser(data.user ?? user);
+                          setShowEdit(false);
+                        } catch (err: any) {
+                          console.error(err);
+                          setError(err.message || "An error occurred");
+                        } finally {
+                          setIsSaving(false);
+                        }
+                      }}
+                    >
+                      <div className="mb-3">
+                        <label className="block text-sm text-gray-600">Display name</label>
+                        <input
+                          value={editData.displayName}
+                          onChange={(e) => setEditData({ ...editData, displayName: e.target.value })}
+                          className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="block text-sm text-gray-600">Avatar image URL</label>
+                        <input
+                          value={editData.image}
+                          onChange={(e) => setEditData({ ...editData, image: e.target.value })}
+                          className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                        />
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="block text-sm text-gray-600">Bio</label>
+                        <textarea
+                          value={editData.bio}
+                          onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                          className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                          rows={4}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-end gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowEdit(false)}
+                          className="rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSaving}
+                          className="rounded-md bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700 disabled:opacity-60"
+                        >
+                          {isSaving ? "Saving..." : "Save"}
+                        </button>
+                      </div>
+                      {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
+                    </form>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
       </div>
       {user.bio && (
         <p className="text-sm text-gray-700 whitespace-pre-wrap">{user.bio}</p>
@@ -163,23 +286,8 @@ export default function ProfilePage() {
         {notes.length === 0 ? (
           <p className="text-sm text-gray-500">No public notes yet.</p>
         ) : (
-          <div className="space-y-4">
-            {notes.map((note) => (
-              <article
-                key={note._id}
-                className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
-              >
-                <h3 className="font-semibold mb-1 line-clamp-2">
-                  {note.title || "(Untitled note)"}
-                </h3>
-                <p className="text-sm text-gray-700 line-clamp-3 whitespace-pre-wrap mb-2">
-                  {note.content}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {new Date(note.createdAt).toLocaleDateString()}
-                </p>
-              </article>
-            ))}
+          <div className="space-y-10 my-5">
+            <ListNote notes={notes} />
           </div>
         )}
       </div>

@@ -1,7 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react";
-
 export default function Response() {
   return <div className="my-5">
     <div className="text-black text-lg my-5">Response (0)</div>

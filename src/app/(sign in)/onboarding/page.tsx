@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Mars, Venus, CircleHelp as CircleQuestionMark } from "lucide-react";
 import { redirect } from "next/navigation";
 import type { IUser } from "@/models/User";
 
@@ -17,9 +16,8 @@ export default function EditProfilePage() {
   const { data: session, status } = useSession();
 
   // Initialize state with data from the session
-  const [displayName, setDisplayName] = useState(session?.user?.name || session?.user?.displayName || "");
+  const [displayName, setDisplayName] = useState(session?.user?.name || "");
   const [username, setUsername] = useState("");
-  const [gender, setGender] = useState("");
   const [bio, setBio] = useState("");
   const [errInput, setErrInput] = useState<{
     username?: string;
@@ -54,7 +52,7 @@ export default function EditProfilePage() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username, displayName, gender, bio }),
+      body: JSON.stringify({ username, displayName, bio }),
     });
     const data = await res.json();
     if (res.status !== 200) {
@@ -99,27 +97,13 @@ export default function EditProfilePage() {
           />
         )}
         <h2 className="text-center text-xl font-bold text-gray-800">
-          Complete Your Profile
+          Wellcome To vibeNotes
         </h2>
+        <p>Complete your profile to get started.</p>
       </div>
 
       <form onSubmit={handleProfileSubmit} className="space-y-5">
         {/* Email (readonly) */}
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-xs font-medium text-gray-500"
-          >
-            Email (cannot be changed)
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={session?.user?.email || ""}
-            disabled
-            className="mt-1 w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-600"
-          />
-        </div>
 
         {/* Display Name */}
         <div>
