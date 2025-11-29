@@ -5,6 +5,19 @@ import clientPromise from "@/lib/mongoClient";
 import Google from "next-auth/providers/google";
 import DiscordProvider from "next-auth/providers/discord";
 
+// Normalize auth-related environment URLs so `new URL()` in auth library
+// doesn't fail when deployment env vars (like VERCEL_URL) omit protocol.
+function ensureUrlProtocol(u?: string | undefined) {
+  if (!u) return u;
+  // If already has scheme (http:// or https:// etc.), return as-is
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(u)) return u;
+  return `https://${u}`;
+}
+
+process.env.NEXTAUTH_URL = ensureUrlProtocol(process.env.NEXTAUTH_URL ?? process.env.VERCEL_URL ?? process.env.AUTH_URL) ?? process.env.NEXTAUTH_URL;
+process.env.AUTH_URL = ensureUrlProtocol(process.env.AUTH_URL ?? process.env.NEXTAUTH_URL) ?? process.env.AUTH_URL;
+process.env.NEXTAUTH_URL_INTERNAL = ensureUrlProtocol(process.env.NEXTAUTH_URL_INTERNAL ?? process.env.NEXTAUTH_URL) ?? process.env.NEXTAUTH_URL_INTERNAL;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: MongoDBAdapter(clientPromise),
   providers: [
