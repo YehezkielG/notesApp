@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { MoreVertical } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { transformAvatar } from "@/lib/utils/image";
+import LogoutModal from "@/components/LogoutModal";
 import ListNote from "@/components/ListNotes";
 import ProfileSkeleton from "@/components/skeletons/ProfileSkeleton";
 import AvatarUpload from "@/components/AvatarUpload";
@@ -34,6 +37,9 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [editData, setEditData] = useState({ username: "", displayName: "", bio: "", image: "" });
   const modalRef = useRef<HTMLDivElement | null>(null);
+  const [showLogout, setShowLogout] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const settingsRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -84,6 +90,19 @@ export default function ProfilePage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [showEdit]);
 
+  // close settings dropdown on outside click
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!showSettings) return;
+      if (!settingsRef.current) return;
+      const el = settingsRef.current as HTMLElement;
+      if (e.target && el.contains(e.target as Node)) return;
+      setShowSettings(false);
+    };
+    document.addEventListener("click", onDoc);
+    return () => document.removeEventListener("click", onDoc);
+  }, [showSettings]);
+
   const handleFollowToggle = async () => {
     if (!session?.user?.id) {
       router.push("/auth");
@@ -124,7 +143,7 @@ export default function ProfilePage() {
         {/* Profile Header */}
         <div className="bg-white rounded-xl ">
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden shrink-0">
               <Image
                 src={transformAvatar(user.image || "/default-profile.png",80)}
                 alt="Profile Picture"
@@ -139,7 +158,7 @@ export default function ProfilePage() {
                   <h1 className="text-2xl md:text-3xl font-bold truncate">{user.displayName}</h1>
                   <p className="text-sm text-gray-600 truncate">@{user.username}</p>
                 </div>
-                <div className="ml-auto flex items-center gap-3">
+                <div className="ml-auto flex items-center gap-3 relative">
                   {!isOwnProfile && session ? (
                     <button
                       onClick={handleFollowToggle}
@@ -149,20 +168,45 @@ export default function ProfilePage() {
                       {followPending ? "..." : isFollowing ? "Following" : "Follow"}
                     </button>
                   ) : (
-                    <button
-                      onClick={() => {
-                        setEditData({
-                          username: user?.username ?? "",
-                          displayName: user?.displayName ?? "",
-                          bio: user?.bio ?? "",
-                          image: user?.image ?? "",
-                        });
-                        setShowEdit(true);
-                      }}
-                      className="rounded-full px-4 py-1.5 text-sm cursor-pointer font-medium border-[1px] text-gray-700 hover:bg-gray-100"
-                    >
-                      Edit Profile
-                    </button>
+                    <div className="relative">
+                      <button
+                        aria-label="Profile settings"
+                        onClick={() => setShowSettings((s) => !s)}
+                        ref={settingsRef}
+                        className="p-2 rounded-full hover:bg-gray-100"
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+
+                      {showSettings && (
+                        <div className="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-md border border-gray-200 py-1 z-50">
+                          <button
+                            onClick={() => {
+                              setShowSettings(false);
+                              setEditData({
+                                username: user?.username ?? "",
+                                displayName: user?.displayName ?? "",
+                                bio: user?.bio ?? "",
+                                image: user?.image ?? "",
+                              });
+                              setShowEdit(true);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                          >
+                            Edit Profile
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowSettings(false);
+                              setShowLogout(true);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-red-600"
+                          >
+                            Logout
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -197,7 +241,7 @@ export default function ProfilePage() {
 
               <motion.div
                 ref={modalRef}
-                className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-lg"
+                className="relative z-10 w-full max-w-md rounded-xl bg-white p-4 shadow-lg"
                 initial={{ y: 30, opacity: 0, scale: 0.98 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: 20, opacity: 0, scale: 0.98 }}
@@ -299,6 +343,16 @@ export default function ProfilePage() {
             </motion.div>
           )}
         </AnimatePresence>
+        <LogoutModal
+          open={showLogout}
+          onClose={() => setShowLogout(false)}
+          avatar={transformAvatar(user.image || "/default-profile.png", 80)}
+          username={user.username}
+          onConfirm={() => {
+            // call next-auth signOut and redirect to home
+            signOut({ callbackUrl: "/" });
+          }}
+        />
       </div>
       {user.bio && (
         <p className="text-sm text-gray-700 whitespace-pre-wrap mt-5">{user.bio}</p>

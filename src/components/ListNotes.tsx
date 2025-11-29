@@ -10,7 +10,7 @@ import PublicNoteCard from "@/components/PublicNoteCard";
 
 /* VeggieBurgerIcon removed — not used after refactor */
 
-export default function ListNote({ notes }: { notes: NoteType[] }) {
+export default function ListNote({ notes, showDominant = false }: { notes: NoteType[]; showDominant?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -141,6 +141,7 @@ export default function ListNote({ notes }: { notes: NoteType[] }) {
               onEdit={handleEdit}
               onDelete={handleDelete}
               hideMeta={true}
+              hideDominant={false}
             />
           );
         })}

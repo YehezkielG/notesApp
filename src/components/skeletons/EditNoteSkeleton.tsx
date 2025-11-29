@@ -13,7 +13,7 @@ export default function EditNoteSkeleton() {
       <div className="space-y-6">
         {/* Title Input */}
         <div className="border-b border-gray-200 pb-2">
-          <div className="h-7 w-64 rounded bg-gray-200" />
+          <div className="h-7 w-full max-w-md rounded bg-gray-200" />
         </div>
 
         {/* Toolbar */}
@@ -43,7 +43,7 @@ export default function EditNoteSkeleton() {
         {/* Visibility Badge */}
         <div className="flex items-center gap-3">
           <div className="h-9 w-28 rounded-full bg-gray-200" />
-          <div className="h-4 w-48 rounded bg-gray-200" />
+          <div className="h-4 w-full max-w-xs rounded bg-gray-200" />
         </div>
 
         {/* Action Buttons */}

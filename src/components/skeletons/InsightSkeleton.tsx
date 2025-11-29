@@ -4,8 +4,8 @@ export default function InsightSkeleton() {
       <div className="container mx-auto px-4 py-6 md:py-10">
         {/* Header Section */}
         <header className="mb-6 md:mb-8">
-          <div className="h-10 w-64 rounded-lg bg-gray-200 mb-2" />
-          <div className="h-5 w-80 rounded-lg bg-gray-200" />
+          <div className="h-10 w-full max-w-xs rounded-lg bg-gray-200 mb-2" />
+          <div className="h-5 w-full max-w-md rounded-lg bg-gray-200" />
         </header>
 
         {/* Top row: stats + top 3 public notes */}
@@ -27,13 +27,13 @@ export default function InsightSkeleton() {
 
           {/* Top Notes Card */}
           <div className="lg:col-span-2 bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-200">
-            <div className="h-6 w-48 rounded-lg bg-gray-200 mb-4" />
+            <div className="h-6 w-full max-w-xs rounded-lg bg-gray-200 mb-4" />
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="bg-white rounded-lg p-4 border border-gray-200">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="h-3 w-3 rounded-full bg-gray-200" />
-                    <div className="h-4 w-48 rounded bg-gray-200" />
+                    <div className="h-3 w-3 rounded-full bg-gray-200 shrink-0" />
+                    <div className="h-4 w-full max-w-xs rounded bg-gray-200" />
                   </div>
                   <div className="flex gap-3 ml-6">
                     <div className="h-3 w-16 rounded bg-gray-200" />
@@ -49,7 +49,7 @@ export default function InsightSkeleton() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Public Chart */}
           <div className="bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-200">
-            <div className="h-6 w-56 rounded-lg bg-gray-200 mb-6" />
+            <div className="h-6 w-full max-w-sm rounded-lg bg-gray-200 mb-6" />
             <div className="h-64 rounded-lg bg-gray-200" />
             {/* Legend */}
             <div className="flex flex-wrap gap-3 mt-4">
@@ -64,7 +64,7 @@ export default function InsightSkeleton() {
 
           {/* Private Chart */}
           <div className="bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-200">
-            <div className="h-6 w-56 rounded-lg bg-gray-200 mb-6" />
+            <div className="h-6 w-full max-w-sm rounded-lg bg-gray-200 mb-6" />
             <div className="h-64 rounded-lg bg-gray-200" />
             {/* Legend */}
             <div className="flex flex-wrap gap-3 mt-4">
@@ -80,7 +80,7 @@ export default function InsightSkeleton() {
 
         {/* Weekly Trend Chart */}
         <div className="bg-gray-50 rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="h-6 w-48 rounded-lg bg-gray-200 mb-6" />
+          <div className="h-6 w-full max-w-xs rounded-lg bg-gray-200 mb-6" />
           <div className="h-80 rounded-lg bg-gray-200" />
           {/* Legend */}
           <div className="flex flex-wrap gap-3 mt-4 justify-center">

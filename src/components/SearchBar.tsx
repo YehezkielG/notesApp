@@ -7,14 +7,16 @@ type SearchBarProps = {
   onSearch: (query: string) => void;
   placeholder?: string;
   className?: string;
+  defaultValue?: string;
 };
 
 export default function SearchBar({
   onSearch,
   placeholder = "Search...",
   className = "",
+  defaultValue = "",
 }: SearchBarProps) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(defaultValue);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

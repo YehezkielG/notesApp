@@ -31,7 +31,6 @@ export default function EditNotePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState(false);
-  const [createdAt, setCreatedAt] = useState<string>("");
   // removed visible remainingTime timer per UI request
   const [canEdit, setCanEdit] = useState(true);
 
@@ -78,7 +77,6 @@ export default function EditNotePage() {
         setTitle(note.title);
         setContent(note.content);
         setIsPublic(note.isPublic);
-        setCreatedAt(note.createdAt);
         setCanEdit(true);
       } catch (err: any) {
         setError(err.message || "Failed to load note");
@@ -298,14 +296,14 @@ export default function EditNotePage() {
         </div>
 
         <div className={`flex flex-col flex-1 rounded-2xl bg-transparent ${focusMode ? "mt-2" : ""}`}>
-          <div className="sticky top-0 flex flex-wrap pb-6 h-10 items-center gap-2 text-sm">
+          <div className="sticky top-0 flex flex-wrap pb-6 min-h-10 items-center gap-2 text-sm">
             {toolbarActions.map(({ action, icon: Icon, label }) => (
               <button
                 key={action}
                 type="button"
                 onClick={() => handleToolbarAction(action)}
                 disabled={!canEdit}
-                className="inline-flex items-center gap-1 bg-white rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+                className="inline-flex items-center gap-1 bg-white rounded-md border px-3 py-1.5 text-[11px] sm:text-xs font-semibold disabled:opacity-50"
               >
                 <Icon className="h-4 w-4" />
                 {label}
@@ -325,7 +323,7 @@ export default function EditNotePage() {
               onKeyDown={handleTextareaKeyDown}
               disabled={!canEdit}
               spellCheck={false}
-              className="w-full overflow-none resize-none bg-transparent text-sm outline-none focus:ring-0 leading-relaxed disabled:opacity-50"
+              className="w-full overflow-none resize-none bg-transparent text-sm sm:text-base outline-none focus:ring-0 leading-relaxed disabled:opacity-50"
               style={{
                 fontFamily: editorFontFamily,
                 minHeight: editorMinHeight,

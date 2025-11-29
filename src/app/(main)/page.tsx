@@ -183,7 +183,7 @@ export default function ExplorePage() {
                     key={user._id}
                     href={`/profile/${user.username}`}
                     className="flex items-center gap-3 rounded-xl border border-transparent bg-white/70 backdrop-blur transition-shadow">
-                    <div className="w-10 h-10 rounded-full overflow-hidden">
+                    <div className="w-10 h-10 rounded-full overflow-hidden shrink-0">
                       <Image
                         src={user.image || "/default-profile.png"}
                         alt={user.displayName}
@@ -242,25 +242,25 @@ export default function ExplorePage() {
           </div>
 
           {loading ? (
-            <NoteCardSkeleton count={4} />
-          ) : error ? (
-            <p className="text-sm text-gray-500">{error}</p>
-          ) : notes.length === 0 ? (
-            <p className="text-sm text-gray-500">No notes found.</p>
-          ) : (
-            <>
-              <div className="space-y-10">
-                <ListNote notes={notes} />
-              </div>
-              <div ref={loaderRef} className="w-full" />
-              {loadingMore && <NoteCardSkeleton count={3} />}
-              {!hasMore && (
-                <p className="text-center text-xs text-gray-400">
-                  You’re all caught up.
-                </p>
+                <NoteCardSkeleton count={4} />
+              ) : error ? (
+                <p className="text-sm text-gray-500">{error}</p>
+              ) : notes.length === 0 ? (
+                <p className="text-sm text-gray-500">No notes found.</p>
+              ) : (
+                <>
+                  <div className="space-y-10">
+                    <ListNote notes={notes} showDominant={activeTab === "popular"} />
+                  </div>
+                  <div ref={loaderRef} className="w-full" />
+                  {loadingMore && <NoteCardSkeleton count={3} />}
+                  {!hasMore && (
+                    <p className="text-center text-xs text-gray-400">
+                      You’re all caught up.
+                    </p>
+                  )}
+                </>
               )}
-            </>
-          )}
         </>
       )}
     </section>

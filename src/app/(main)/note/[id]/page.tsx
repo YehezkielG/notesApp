@@ -170,17 +170,21 @@ export default async function NoteDetailPage({ params }: { params: { id: string 
         <>
             <PublicNoteCard note={clientNote} showMenu={true} hideDominant={true} isOwner={isOwner} />
 
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="mt-5 flex flex-wrap gap-3 sm:gap-4">
               {Array.isArray(note.emotion) && note.emotion.length > 0 ? (
                 note.emotion.map((item: { label: string; score: number }) => {
                   const bgColor = getLabelColor(item.label) ?? "#f3f4f6";
                   return (
-                    <div key={item.label} className="group py-1 px-2 rounded-2xl" style={{ backgroundColor: bgColor + "20", border: `1px solid ${bgColor}33` }}>
-                      <div className="flex justify-between items-center text-sm mb-1 text-gray-700">
-                        <span className="flex items-center mr-2 gap-2 font-medium capitalize">
+                    <div 
+                      key={item.label} 
+                      className="inline-block group py-1 px-2 rounded-2xl"
+                      style={{ backgroundColor: bgColor + "20", border: `1px solid ${bgColor}33` }}
+                    >
+                      <div className="flex justify-between items-center text-xs sm:text-sm mb-1 text-gray-700 ">
+                        <span className="flex items-center mr-2 gap-1 sm:gap-2 font-medium capitalize truncate">
                           <span>{getEmojiForLabel(item.label)}</span> {item.label}
                         </span>
-                        <span className="font-mono text-xs flex items-center text-gray-500">{(item.score * 100).toFixed(1)}%</span>
+                        <span className="font-mono text-[10px] sm:text-xs flex items-center text-gray-500">{(item.score * 100).toFixed(1)}%</span>
                       </div>
                     </div>
                   );

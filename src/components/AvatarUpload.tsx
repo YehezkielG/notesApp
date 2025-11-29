@@ -39,7 +39,7 @@ export default function AvatarUpload({
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="relative w-24 h-24">
-        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200">
+        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 shrink-0">
           <Image
             src={transformAvatar(previewUrl || "/default-profile.png", 120)}
             alt="Avatar"
@@ -64,7 +64,13 @@ export default function AvatarUpload({
           {({ open }) => (
             <button
               type="button"
-              onClick={() => open()}
+              onClick={() => {
+                if (typeof open !== "function") {
+                  console.warn("Upload widget not available: open is undefined");
+                  return;
+                }
+                open();
+              }}
               className="absolute bottom-0 right-0 rounded-full bg-indigo-600 p-2 text-white shadow-lg hover:bg-indigo-700 transition-colors"
             >
               <Camera size={16} />
@@ -90,7 +96,13 @@ export default function AvatarUpload({
           {({ open }) => (
             <button
               type="button"
-              onClick={() => open()}
+              onClick={() => {
+                if (typeof open !== "function") {
+                  console.warn("Upload widget not available: open is undefined");
+                  return;
+                }
+                open();
+              }}
               className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
             >
               Upload new photo

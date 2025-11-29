@@ -28,6 +28,7 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion?: (emoti
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const editorFontFamily = "var(--font-inter), 'Inter', sans-serif";
   const editorMinHeight = focusMode ? "calc(100vh - 50vh)" : "60vh";
@@ -104,6 +105,14 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion?: (emoti
   }, [showTitleBanner, titleHint]);
 
   useEffect(() => {
+    // Only toggle the global focus-mode class on non-mobile viewports
+    if (isMobile) {
+      if (document.body.classList.contains("note-focus-mode")) {
+        document.body.classList.remove("note-focus-mode");
+      }
+      return;
+    }
+
     if (focusMode) {
       document.body.classList.add("note-focus-mode");
     } else {
@@ -112,7 +121,7 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion?: (emoti
     return () => {
       document.body.classList.remove("note-focus-mode");
     };
-  }, [focusMode]);
+  }, [focusMode, isMobile]);
 
   const adjustTextareaHeight = () => {
     const ta = textareaRef.current;
@@ -132,6 +141,19 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion?: (emoti
     if (typeof window === "undefined") return;
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, [focusMode]);
+
+  // Detect mobile viewport (Tailwind 'lg' breakpoint = 1024px)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile && focusMode) setFocusMode(false);
+    };
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, [focusMode]);
 
   // Save a snapshot to the undo stack after user stops typing for 600ms
@@ -371,24 +393,27 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion?: (emoti
         <FileText className="h-6 w-6 text-black" />
         <h1 className="text-lg font-bold">New Note</h1>
 
-        <button
-          type="button"
-          aria-pressed={focusMode}
-          onClick={() => setFocusMode((s) => !s)}
-          className="ml-auto inline-flex items-center gap-2 rounded-md border border-black/60 bg-transparent px-3 py-1.5 text-xs font-semibold text-black hover:border-black hover:text-gray-600 cursor-pointer"
-        >
-          {focusMode ? (
-            <>
-              <Minimize2 className="h-4 w-4 text-black" />
-              <span>Exit focus</span>
-            </>
-          ) : (
-            <>
-              <Maximize2 className="h-4 w-4 text-black" />
-              <span>Focus mode</span>
-            </>
-          )}
-        </button>
+        {/* Hide focus-mode toggle on mobile viewports */}
+        {!isMobile && (
+          <button
+            type="button"
+            aria-pressed={focusMode}
+            onClick={() => setFocusMode((s) => !s)}
+            className="ml-auto inline-flex items-center gap-2 rounded-md border border-black/60 bg-transparent px-3 py-1.5 text-xs font-semibold text-black hover:border-black hover:text-gray-600 cursor-pointer"
+          >
+            {focusMode ? (
+              <>
+                <Minimize2 className="h-4 w-4 text-black" />
+                <span>Exit focus</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 className="h-4 w-4 text-black" />
+                <span>Focus mode</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       <div className="">
@@ -484,18 +509,18 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion?: (emoti
             focusMode ? "mt-2" : ""
           }`}
         >
-          <div className="sticky top-0 flex flex-wrap pb-6 h-10 items-center gap-2 text-sm text-black ">
+          <div className="sticky top-0 flex flex-wrap pb-6 min-h-10 items-center gap-2 text-sm text-black">
             {toolbarActions.map(({ action, icon: Icon, label, theme }) => (
               <button
                 key={action}
                 type="button"
                 onClick={() => handleToolbarAction(action)}
-                className={`inline-flex items-center gap-1 bg-white rounded-md border px-3 py-1.5 text-xs font-semibold cursor-pointer ${theme.button}`}
+                className={`inline-flex items-center gap-1 bg-white rounded-md border px-3 py-1.5 text-[11px] sm:text-xs font-semibold cursor-pointer ${theme.button}`}
               >
                 <Icon className={`h-4 w-4 ${theme.icon}`} />
                 {label}
               </button>
-              ))}
+            ))}
           </div>
           <div className="flex-1 min-h-0 text-gray-800">
             <textarea
@@ -507,8 +532,7 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion?: (emoti
               }}
               onKeyDown={handleTextareaKeyDown}
               spellCheck={false}
-              className="w-full overflow-none resize-none bg-transparent text-sm text-black outline-none focus:ring-0 leading-relaxed
-              "
+              className="w-full overflow-none resize-none bg-transparent text-sm sm:text-base text-black outline-none focus:ring-0 leading-relaxed"
               style={{
                 fontFamily: editorFontFamily,
                 minHeight: editorMinHeight,
@@ -545,20 +569,23 @@ export default function TextEditor({ analyzeEmotion }: { analyzeEmotion?: (emoti
 
         {error && <p className="text-black text-sm">{error}</p>}
 
-        <div className="mb-5 flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={includeCounselor}
-              onChange={(e) => setIncludeCounselor(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-            />
-            <span className="flex items-center gap-1.5">
-              <Sparkles size={14} className="text-indigo-500" />
-              Ask AI Counselor for advice
-            </span>
-          </label>
-          <div>
+        <div className="mb-5">
+          <div className="mb-3">
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={includeCounselor}
+                onChange={(e) => setIncludeCounselor(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              <span className="flex items-center gap-1.5">
+                <Sparkles size={14} className="text-indigo-500" />
+                Ask AI Counselor for advice
+              </span>
+            </label>
+          </div>
+
+          <div className="flex justify-end">
             <button
               type="submit"
               className="py-3 px-4 rounded-xl border border-black bg-transparent text-sm font-semibold text-black hover:bg-black/5 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors cursor-pointer"

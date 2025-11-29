@@ -334,7 +334,7 @@ function ResponseItem({ response, responseIndex, noteId, isPublic, onReplyAdded,
         <div className="flex items-center gap-2 mb-2">
           {isPublic ? (
             <Link href={`/profile/${authorUsername}`} className="shrink-0">
-              <div className="w-6 h-6 rounded-full overflow-hidden">
+              <div className="w-6 h-6 rounded-full overflow-hidden shrink-0">
                 <Image
                   src={transformAvatar(authorImage, 32)}
                   alt={authorUsername}
@@ -672,7 +672,7 @@ function ReplyItem({ reply, replyIndex, responseIndex, responseProp, noteId, isP
         <div className="flex items-center gap-1.5 mb-1">
           {isPublic ? (
             <Link href={`/profile/${authorUsername}`} className="shrink-0">
-              <div className="w-5 h-5 rounded-full overflow-hidden">
+              <div className="w-5 h-5 rounded-full overflow-hidden shrink-0">
                 <Image
                   src={transformAvatar(authorImage, 24)}
                   alt={authorUsername}

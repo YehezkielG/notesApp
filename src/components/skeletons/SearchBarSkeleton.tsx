@@ -17,7 +17,7 @@ export default function SearchBarSkeleton() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-linear-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200">
+            <div key={i} className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-4 border border-gray-200">
               {/* Rank Badge */}
               <div className="flex items-center justify-between mb-3">
                 <div className="h-8 w-8 rounded-full bg-gray-200" />

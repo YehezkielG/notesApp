@@ -61,3 +61,36 @@ body {
 .shimmer {
   animation: shimmer 1.6s linear infinite;
 }
+
+/* Mobile typography normalization:
+   On small screens (below Tailwind's `lg` breakpoint) force any
+   larger-than-base text utilities back to the default base font size
+   (1rem) so the UI reads at default mobile size. Keep smaller sizes
+   (`text-sm`, `text-xs`) intact.
+*/
+@media (max-width: 1023px) {
+  html, body {
+    font-size: 16px;
+  }
+
+  /* Reset larger Tailwind text utilities to base on mobile. Use
+     !important to override utility classes where necessary. */
+  .text-lg,
+  .text-xl,
+  .text-2xl,
+  .text-3xl,
+  .text-4xl,
+  .text-5xl,
+  .text-6xl,
+  .text-7xl,
+  .text-8xl {
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Optional: normalize headings that may not use text-* classes */
+  h1, h2, h3, h4 {
+    font-size: 1rem !important;
+    line-height: 1.4 !important;
+  }
+}

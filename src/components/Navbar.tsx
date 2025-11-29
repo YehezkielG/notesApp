@@ -1,10 +1,11 @@
 "use client";
-import { Globe, NotebookText, Bell, ChartLine, Plus } from "lucide-react";
+import { Compass, NotebookText, Bell, ChartLine, PlusCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useSession, signOut } from "next-auth/react";
-import { useState, useRef, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
+import SearchBar from "./SearchBar";
 import { transformAvatar } from "@/lib/utils/image";
 
 export default function Navbar() {
@@ -22,12 +23,12 @@ export default function Navbar() {
   const navItems = [
     {
       href: "/note/new",
-      icon: <Plus className="inline mr-3 text-gray-400" size={25} />,
+      icon: <PlusCircle className="inline mr-3 text-gray-400" size={25} />,
       label: "New Note",
     },
     {
       href: "/",
-      icon: <Globe className="inline mr-3 text-gray-400" size={25} />,
+      icon: <Compass className="inline mr-3 text-gray-400" size={25} />,
       label: "Explore",
     },
     {
@@ -47,33 +48,43 @@ export default function Navbar() {
     },
   ];
 
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    }
-    if (showDropdown)
-      document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showDropdown]);
+  // removed dropdown logic; logout will be handled on the profile page
 
   const profileImage = transformAvatar(
     session?.user?.image || "/default-profile.png",
     48
   );
 
+  // Mobile menu open 
+
+  const handleSearch = (q: string) => {
+    // placeholder: integrate search navigation as needed
+  };
+
   return (
-    <nav>
-      <div className="container mx-auto">
+    <nav className="w-full">
+      {/* Mobile top bar (visible below lg). Show app name only on Home. */}
+      <div className="lg:hidden sticky top-0 z-50 bg-white">
+        {pathname === "/" && (
+          <div className="flex items-center justify-between py-3 px-3">
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/logo.png" alt="Logo" width={28} height={28} />
+              <span className="font-bold text-lg">vibeNotes</span>
+            </Link>
+            <Link href="/notifications" aria-label="Notifications" className="text-gray-600 hover:text-gray-900">
+              <Bell size={20} />
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* mobile search removed per request (Instagram-like) */}
+
+      {/* Mobile slide-over menu removed: use BottomNav for navigation */}
+
+      {/* Desktop header + vertical nav */}
+      <div className="hidden lg:block">
         <div className="flex select-none my-5">
-          {/* Left column: brand + vertical nav */}
           <div className="w-48 flex flex-col items-start gap-4">
             <div className="flex items-center gap-3">
               <Image
@@ -108,73 +119,41 @@ export default function Navbar() {
                 );
               })}
             </ul>
-
-            {/* User summary at bottom of left column */}
             <div className="mt-auto w-full">
               {isLoading ? (
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="rounded-full w-7 h-7 bg-gray-200 animate-pulse" />
-                  <div className="w-24 h-4 bg-gray-200 rounded animate-pulse" />
-                </div>
-              ) : session?.user ? (
-                <div
-                  ref={dropdownRef}
-                  className="relative flex items-center gap-3 min-w-0"
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="rounded-full w-7 h-7 bg-gray-200 animate-pulse shrink-0" />
+                      <div className="w-24 h-4 bg-gray-200 rounded animate-pulse" />
+                    </div>
+                  ) : session?.user ? (
+                <Link
+                  href={`/profile/${session.user.username}`}
+                  className="flex items-center gap-3 min-w-0 shrink-0"
                 >
-                  <button
-                    onClick={() => setShowDropdown((v) => !v)}
-                    aria-current={isOwnProfileView ? "true" : undefined}
-                    aria-expanded={showDropdown}
-                    className="flex items-center space-x-3 min-w-0"
+                  <div
+                    className={`rounded-full overflow-hidden w-7 h-7 ring-2 ${
+                      isOwnProfileView ? "ring-black" : "ring-gray-100"
+                    } shrink-0`}
                   >
-                    <div
-                      className={`rounded-full overflow-hidden w-7 h-7 ring-2 ${
-                        isOwnProfileView ? "ring-black" : "ring-gray-100"
-                      }`}
-                    >
-                      <Image
-                        src={profileImage}
-                        alt="Profile"
-                        width={28}
-                        height={28}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-
-                    <span
-                      className={`block truncate max-w-40 ${
-                        isOwnProfileView
-                          ? "text-black font-semibold"
-                          : "text-gray-600 hover:text-black"
-                      }`}
-                      title={session?.user?.username ?? ""}
-                    >
-                      {session?.user?.username ?? ""}
-                    </span>
-
-                    {/* Dropdown menu with Logout */}
-                  </button>
-                  {showDropdown && (
-                    <div className="absolute left-0 top-full mt-2 z-50 w-44 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                      <Link
-                        href={`/profile/${session?.user?.username ?? ""}`}
-                        onClick={() => setShowDropdown(false)}
-                        className="w-full block px-4 py-2 text-left text-sm hover:bg-gray-50"
-                      >
-                        Profile
-                      </Link>
-                      <button
-                        onClick={() => {
-                          setShowDropdown(false);
-                          signOut({ callbackUrl: "/" });
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-red-600"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    <Image
+                      src={profileImage}
+                      alt="Profile"
+                      width={28}
+                      height={28}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <span
+                    className={`block truncate max-w-40 ${
+                      isOwnProfileView
+                        ? "text-black font-semibold"
+                        : "text-gray-600 hover:text-black"
+                    }`}
+                    title={session?.user?.username ?? ""}
+                  >
+                    {session?.user?.username ?? ""}
+                  </span>
+                </Link>
               ) : (
                 <Link
                   className="border-2 text-white bg-indigo-600 px-4 py-1 rounded-xl"

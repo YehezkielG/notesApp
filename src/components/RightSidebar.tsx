@@ -46,49 +46,88 @@ export default function RightSidebar() {
     };
   }, []);
 
-    return <header className="flex items-center justify-end my-5">
+    return <header className="flex items-center my-5">
 
       {/* Follow suggestions */}
       {loadingSuggestions ? (
         <SuggestionsSkeleton />
       ) : suggestions && (
-        <aside className="">
+        <aside className="px-2">
           <h4 className="text-sm font-semibold text-gray-700 mb-3">Suggested for you</h4>
-          <div className="space-y-3">
-            {/* Prefer recent public authors first, then newest users (unique) */}
-            {[...suggestions.recent, ...suggestions.newest]
-              .reduce((acc: Suggestion[], cur) => {
-                if (!acc.find((a) => a._id === cur._id)) acc.push(cur);
-                return acc;
-              }, [])
-              .slice(0, 5)
+          {/* Desktop/large: vertical list */}
+          <div className="hidden lg:block">
+            <div className="space-y-3">
+              {[...suggestions.recent, ...suggestions.newest]
+                .reduce((acc: Suggestion[], cur) => {
+                  if (!acc.find((a) => a._id === cur._id)) acc.push(cur);
+                  return acc;
+                }, [])
+                .slice(0, 5)
                 .map((s) => (
-                <div key={s._id} className="flex items-center justify-between gap-3">
-                  <Link href={`/profile/${s.username}`} className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-full overflow-hidden">
-                      <Image
-                        src={transformAvatar(s.image || "/default-profile.png", 40)}
-                        alt={s.username}
-                        width={36}
-                        height={36}
-                        className="object-cover w-full h-full"
-                      />
+                  <div key={s._id} className="flex items-center justify-between gap-3">
+                    <Link href={`/profile/${s.username}`} className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
+                        <Image
+                          src={transformAvatar(s.image || "/default-profile.png", 40)}
+                          alt={s.username}
+                          width={36}
+                          height={36}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                      <div className="text-xs min-w-0">
+                        <div className="font-semibold text-gray-800 truncate max-w-40" title={s.displayName}>{s.displayName}</div>
+                        <div className="text-gray-500 truncate max-w-40" title={`@${s.username}`}>@{s.username}</div>
+                      </div>
+                    </Link>
+                    <FollowButton username={s.username} initialFollowing={!!s.isFollowing} onToggle={(isFollowing) => {
+                      setSuggestions((prev) => {
+                        if (!prev) return prev;
+                        const update = (arr: Suggestion[]) => arr.map(u => u._id === s._id ? { ...u, isFollowing } : u);
+                        return { newest: update(prev.newest), recent: update(prev.recent) };
+                      });
+                    }} />
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          {/* Mobile: card grid */}
+          <div className={`block lg:hidden w-[360px] `}>
+            <div className="flex items-center gap-3 overflow-x-auto overflow-y-hidden">
+              {[...suggestions.recent, ...suggestions.newest]
+                .reduce((acc: Suggestion[], cur) => {
+                  if (!acc.find((a) => a._id === cur._id)) acc.push(cur);
+                  return acc;
+                }, [])
+                .slice(0, 6)
+                .map((s) => (
+                  <div key={s._id} className="inline-block bg-white w-[150px] rounded-lg border border-gray-100 p-4 text-center h-full hover:shadow-md transition-shadow">
+                    <Link href={`/profile/${s.username}`} className="flex flex-col items-center gap-2 w-full">
+                      <div className="w-20 h-20 rounded-full overflow-hidden shrink-0">
+                        <Image
+                          src={transformAvatar(s.image || "/default-profile.png", 96)}
+                          alt={s.username}
+                          width={96}
+                          height={96}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                      <div className="mt-2 text-sm font-semibold text-gray-800 truncate max-w-full" title={s.displayName}>{s.displayName}</div>
+                      <div className="text-xs text-gray-500 truncate max-w-full">@{s.username}</div>
+                    </Link>
+                    <div className="w-full mt-auto">
+                      <FollowButton username={s.username} initialFollowing={!!s.isFollowing} onToggle={(isFollowing) => {
+                        setSuggestions((prev) => {
+                          if (!prev) return prev;
+                          const update = (arr: Suggestion[]) => arr.map(u => u._id === s._id ? { ...u, isFollowing } : u);
+                          return { newest: update(prev.newest), recent: update(prev.recent) };
+                        });
+                      }} />
                     </div>
-                    <div className="text-xs min-w-0">
-                      <div className="font-semibold text-gray-800 truncate max-w-40" title={s.displayName}>{s.displayName}</div>
-                      <div className="text-gray-500 truncate max-w-40" title={`@${s.username}`}>@{s.username}</div>
-                    </div>
-                  </Link>
-                  <FollowButton username={s.username} initialFollowing={!!s.isFollowing} onToggle={(isFollowing) => {
-                    // quick local update
-                    setSuggestions((prev) => {
-                      if (!prev) return prev;
-                      const update = (arr: Suggestion[]) => arr.map(u => u._id === s._id ? { ...u, isFollowing } : u);
-                      return { newest: update(prev.newest), recent: update(prev.recent) };
-                    });
-                  }} />
-                </div>
-              ))}
+                  </div>
+                ))}
+            </div>
           </div>
         </aside>
       )}
@@ -117,7 +156,7 @@ function FollowButton({ username, initialFollowing, onToggle }: { username: stri
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`text-xs font-medium px-3 py-1 rounded-lg ${isFollowing ? 'bg-gray-200 text-gray-700' : 'bg-indigo-600 text-white'}`}
+      className={`w-full lg:w-auto text-xs font-medium px-3 py-1 rounded-lg ${isFollowing ? 'bg-gray-200 text-gray-700' : 'bg-indigo-600 text-white'}`}
     >
       {isFollowing ? 'Following' : 'Follow'}
     </button>

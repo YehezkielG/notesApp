@@ -15,6 +15,15 @@ type UserStats = {
   privateEmotionDistribution: Record<string, number>;
 };
 
+type TopNote = {
+  _id?: string;
+  id?: string;
+  title?: string;
+  content?: string;
+  likes?: number;
+  responses?: unknown[];
+};
+
 export default function InsightPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -24,7 +33,7 @@ export default function InsightPage() {
     publicEmotionDistribution: {},
     privateEmotionDistribution: {},
   });
-  const [topNotes, setTopNotes] = useState<any[]>([]);
+  const [topNotes, setTopNotes] = useState<TopNote[]>([]);
   const [weeklyWhisper, setWeeklyWhisper] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
@@ -148,7 +157,7 @@ export default function InsightPage() {
             <h3 className="text-lg font-medium text-gray-900 mb-4">Top Public Notes</h3>
             {topNotes.length > 0 ? (
               <div className="space-y-4">
-                {topNotes.map((n: any) => (
+                {topNotes.map((n) => (
                   <div key={n._id || n.id} className="p-4 rounded-lg border border-gray-200 bg-white">
                     <p className="text-sm text-gray-900 font-semibold mb-1">{n.title || (n.content || '').slice(0, 60) + (n.content && n.content.length > 60 ? '...' : '')}</p>
                     <p className="text-xs text-gray-600">{(n.content || '').slice(0, 120)}{(n.content && n.content.length > 120) ? '...' : ''}</p>
@@ -166,14 +175,14 @@ export default function InsightPage() {
         </div>
 
         {/* Second row: Public Emotional Patterns + Private Emotional Patterns */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 ">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Public Emotional Patterns */}
           <div className="bg-gray-50 rounded-xl shadow-sm border border-gray-200 py-2">
-            <h2 className="text-lg font-semibold  justify-center flex items-center w-full gap-2 text-gray-900">
-              <Globe className="w-6 h-6 text-indigo-600" />
+            <h2 className="text-lg font-semibold justify-center flex items-center w-full gap-2 text-gray-900">
+              <Globe className="w-5 h-5 md:w-6 md:h-6 text-indigo-600" />
               Public Emotional Patterns
             </h2>
-            <div className="aspect-square rounded-lg flex items-center justify-center">
+            <div className="aspect-square w-full max-w-md mx-auto rounded-lg flex items-center justify-center">
               {publicChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -182,7 +191,7 @@ export default function InsightPage() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent, value }) => `${name} ${value}%`}
+                      label={({ name, value }) => `${name} ${value}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -192,7 +201,7 @@ export default function InsightPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      content={({ active, payload, label }) => {
+                      content={({ active, payload }) => {
                         if (!active || !payload || !payload.length) return null;
                         const p = payload[0];
                         return (
@@ -221,10 +230,10 @@ export default function InsightPage() {
           {/* Private Emotional Patterns */}
           <div className="bg-gray-50 rounded-xl shadow-sm border border-gray-200 py-2">
             <h2 className="text-lg font-semibold flex justify-center items-center w-full gap-2 text-gray-900">
-              <Lock className="w-6 h-6 text-indigo-600" />
+              <Lock className="w-5 h-5 md:w-6 md:h-6 text-indigo-600" />
               Private Emotional Patterns
             </h2>
-            <div className="aspect-square rounded-lg flex items-center justify-center">
+            <div className="aspect-square w-full max-w-md mx-auto rounded-lg flex items-center justify-center">
               {privateChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -233,7 +242,7 @@ export default function InsightPage() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent, value }) => `${name} ${value}%`}
+                      label={({ name, value }) => `${name} ${value}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -243,7 +252,7 @@ export default function InsightPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      content={({ active, payload, label }) => {
+                      content={({ active, payload }) => {
                         if (!active || !payload || !payload.length) return null;
                         const p = payload[0];
                         return (

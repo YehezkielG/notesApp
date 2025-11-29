@@ -16,7 +16,7 @@ export default function NoteCardSkeleton({ count = 1 }: NoteCardSkeletonProps) {
           {/* Header: Avatar + Author Info */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gray-200" />
+              <div className="w-12 h-12 rounded-full bg-gray-200 shrink-0" />
               <div className="flex flex-col gap-2">
                 <div className="h-4 w-32 rounded bg-gray-200" />
                 <div className="h-3 w-24 rounded bg-gray-200" />
