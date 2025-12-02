@@ -22,16 +22,23 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        users: users.map((user) => ({
-          _id: String(user._id),
-          username: user.username ?? "",
-          displayName: user.displayName ?? "",
-          email: user.email ?? "",
-          image: user.image ?? "",
-          createdAt: user.createdAt,
-          isOnboarded: user.isOnboarded ?? false,
-          isBanned: user.isBanned ?? false,
-        })),
+        users: users.map((user) => {
+          const objectId: any = user._id as any;
+          const createdDate = user.createdAt 
+            ? new Date(user.createdAt)
+            : (objectId?.getTimestamp ? new Date(objectId.getTimestamp()) : null);
+
+          return {
+            _id: String(user._id),
+            username: user.username ?? "",
+            displayName: user.displayName ?? "",
+            email: user.email ?? "",
+            image: user.image ?? "",
+            createdAt: createdDate ? createdDate.toISOString() : null,
+            isOnboarded: user.isOnboarded ?? false,
+            isBanned: user.isBanned ?? false,
+          };
+        }),
       },
       { status: 200 }
     );

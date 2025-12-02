@@ -34,6 +34,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       authorization: { params: { scope: 'identify email' } },
     }),
   ],
+  pages: {
+    signIn: "/auth",
+    error: "/auth",
+  },
   callbacks: {
     async session({ session, user }) {
       // Attach all user fields to session.user
@@ -61,7 +65,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const existingUser = await users.findOne({ email: user.email });
       
       if (existingUser?.isBanned) {
-        return false; // Block sign in if banned
+        return "/auth?error=banned"; // Redirect banned users to auth page with message
       }
 
       if (!existingUser) return true;

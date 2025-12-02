@@ -1,5 +1,6 @@
 export const ADMIN_EMAILS = [
-  "yehezkielhaganta@gmail.com", // Replace with your email or add more
+  "yehezkielhaganta@gmail.com",
+  "bicanropanjaitan@gmail.com" // Replace with your email or add more
 ];
 
 export const isAdmin = (email?: string | null) => {
