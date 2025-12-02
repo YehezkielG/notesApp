@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Globe, Lock } from "lucide-react";
+import { Sparkles, Globe, Lock, Heart, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { getLabelColor } from "../../../lib/utils/emotionMapping";
@@ -193,8 +193,8 @@ export default function InsightPage() {
                     <p className="text-sm text-gray-900 font-semibold mb-1">{n.title || (n.content || '').slice(0, 60) + (n.content && n.content.length > 60 ? '...' : '')}</p>
                     <p className="text-xs text-gray-600">{(n.content || '').slice(0, 120)}{(n.content && n.content.length > 120) ? '...' : ''}</p>
                     <div className="mt-2 text-xs text-gray-500 flex items-center gap-4">
-                      <span>❤️ {n.likes || 0}</span>
-                      <span>💬 {Array.isArray(n.responses) ? n.responses.length : 0}</span>
+                      <span className="inline-flex items-center gap-2"><Heart className="w-4 h-4 text-red-500" />{n.likes || 0}</span>
+                      <span className="inline-flex items-center gap-2"><MessageCircle className="w-4 h-4 text-gray-500" />{Array.isArray(n.responses) ? n.responses.length : 0}</span>
                     </div>
                   </Link>
                 ))}
@@ -339,7 +339,7 @@ export default function InsightPage() {
 
           <div className="mt-6 pt-4 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
             <span className="flex items-center gap-2">
-              <span className="text-lg">🍃</span>
+              <Sparkles className="w-4 h-4 text-indigo-600" />
               VibeCounselor
             </span>
             <span>
@@ -354,9 +354,9 @@ export default function InsightPage() {
 
         {/* Additional Info Section */}
         <div className="mt-6 bg-surface border border-variant rounded-xl p-4 text-center">
-          <p className="text-sm text-gray-500">
-            💡 This reflection is generated based on your notes from the past 7 days
-            using AI to provide meaningful perspectives.
+          <p className="text-sm text-gray-500 inline-flex items-center justify-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-600" />
+            <span>This reflection is generated based on your notes from the past 7 days using AI to provide meaningful perspectives.</span>
           </p>
         </div>
       </div>

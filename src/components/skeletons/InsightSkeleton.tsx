@@ -1,7 +1,7 @@
 export default function InsightSkeleton() {
   return (
     <div className="min-h-screen bg-transparent">
-      <div className="container mx-auto px-4 py-6 md:py-10">
+      <div className="container mx-auto px-4 pb-6 md:pb-10">
         {/* Header Section */}
         <header className="mb-6 md:mb-8">
           <div className="h-10 w-full max-w-xs rounded-lg skeleton-bg mb-2" />

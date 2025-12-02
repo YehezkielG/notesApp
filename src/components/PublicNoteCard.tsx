@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle, Share2, Edit, Trash2, Globe } from "lucide-react";
+import { MessageCircle, Edit, Trash2, Globe } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import {
 } from "@/lib/utils/emotionMapping";
 import { formatCreatedAt, canEditNote, normalizeNoteId } from "@/lib/utils/notesLib";
 import LikeButton from "@/components/LikeButton";
+import ShareButton from "@/components/ShareButton";
 
 interface PublicNoteCardProps {
   note: NoteType;
@@ -199,13 +200,7 @@ export default function PublicNoteCard({
           />
           <span className="text-sm font-medium">{note.responses?.length || 0}</span>
         </Link>
-        <button className="inline-flex items-center gap-2  hover:text-indigo-600 transition-colors group">
-          <Share2
-            size={18}
-            className="group-hover:scale-110 transition-transform"
-          />
-          <span className="text-sm font-medium">Share</span>
-        </button>
+        <ShareButton path={`/note/${noteId}`} />
       </div>
     </article>
   );

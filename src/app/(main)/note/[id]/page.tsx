@@ -1,7 +1,7 @@
 import "server-only";
 import { notFound } from "next/navigation";
 // relaxed id handling
-import { Lock, Globe, MessageCircle, Share2 } from "lucide-react";
+import { Lock, Globe, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import dbConnect from "@/lib/mongoose";
@@ -13,6 +13,7 @@ import { getEmojiForLabel, getLabelColor } from "@/lib/utils/emotionMapping";
 import { formatCreatedAt } from "@/lib/utils/notesLib";
 import { transformAvatar } from "@/lib/utils/image";
 import LikeButton from "@/components/LikeButton";
+import ShareButton from "@/components/ShareButton";
 
 export default async function NoteDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params;
@@ -242,13 +243,7 @@ export default async function NoteDetailPage({ params }: { params: { id: string 
           />
           <span className="text-sm font-medium">{note.responses?.length || 0}</span>
         </div>
-        <button className="inline-flex items-center gap-2  hover:text-indigo-600 transition-colors group">
-          <Share2
-            size={18}
-            className="group-hover:scale-110 transition-transform"
-          />
-          <span className="text-sm font-medium">Share</span>
-        </button>
+        <ShareButton path={`/note/${String(note._id)}`} />
       </div>
     </article>
 
