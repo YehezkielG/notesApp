@@ -254,14 +254,15 @@ export default async function NoteDetailPage({ params }: { params: { id: string 
                   return (
                     <div 
                       key={item.label} 
-                      className="inline-block group  py-1 px-2 rounded-2xl"
+                      className="inline-block group 
+                      py-1 px-2 rounded-2xl hover:shadow-sm transition-shadow cursor-pointer"
                       style={{ backgroundColor: bgColor + "20",color:bgColor ,border: `1px solid ${bgColor}33` }}
                     >
-                      <div className="flex justify-between items-center text-xs sm:text-sm mb-1 ">
-                        <span className="flex items-center mr-2 gap-1 sm:gap-2 font-medium capitalize truncate">
+                      <div className="flex justify-between items-center mb-1 ">
+                        <span className="flex items-center mr-2 gap-1 sm:gap-2 font-medium capitalize truncate text-sm">
                           <span>{getEmojiForLabel(item.label)}</span> {item.label}
                         </span>
-                        <span className="font-mono text-[10px] sm:text-xs flex items-center text-gray-500">{(item.score * 100).toFixed(1)}%</span>
+                        <span className="font-mono text-xs flex items-center text-gray-500">{(item.score * 100).toFixed(1)}%</span>
                       </div>
                     </div>
                   );
