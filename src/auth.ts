@@ -33,7 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           await resendClient.emails.send({
             from: provider.from!,
             to: email,
-            subject: "Masuk ke vibeNotes — Link verifikasi Anda",
+            subject: "Sign in to vibeNotes — Your verification link",
             html: generateMagicLinkEmail({ url, host, email }),
             text: generateMagicLinkTextEmail({ url, host, email }),
           });

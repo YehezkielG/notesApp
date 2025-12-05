@@ -18,7 +18,6 @@ export default function RightSidebar() {
   const [suggestions, setSuggestions] = useState<{ newest: Suggestion[]; recent: Suggestion[] } | null>(null);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
-  // Sidebar no longer manages a profile dropdown; avatar and profile actions moved to the Navbar.
 
   // Fetch follow suggestions (newest users + recent public authors)
   useEffect(() => {
