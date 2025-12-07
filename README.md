@@ -64,7 +64,7 @@ NEXTAUTH_URL=http://localhost:3000
 
 # auth 
 RESEND_API_KEY=
-EMAIL_FROM="VibeNotes <onboarding@resend.dev>"
+EMAIL_FROM=
 
 # oAuth
 GOOGLE_CLIENT_ID=
