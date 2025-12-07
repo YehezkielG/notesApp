@@ -18,7 +18,7 @@ export default function EditProfilePage() {
   const [displayName, setDisplayName] = useState(session?.user?.name || "");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
-  const [avatar, setAvatar] = useState(session?.user?.image || "");
+  const [avatar, setAvatar] = useState(session?.user?.image || "/default-avatar.png");
   const [errInput, setErrInput] = useState<{
     username?: string;
     displayName?: string;
